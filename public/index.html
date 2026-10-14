@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Личный кабинет</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+</head>
+
+
+<body class="bg-light">
+
+
+<nav class="navbar navbar-dark bg-primary shadow-sm">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           href="index.html">
+
+            Личный кабинет
+
+        </a>
+
+
+        <div class="d-flex gap-2">
+
+            <span class="text-white">
+        Пользователь: <strong id="currentUser"></strong>
+    </span>
+
+            <a
+                href="form.html"
+                class="btn btn-light btn-sm">
+
+                Создать заявку
+
+            </a>
+
+
+            <button
+                onclick="adminLogin()"
+                href="admin.html"
+                class="btn btn-outline-light btn-sm">
+
+                Админ
+
+            </button>
+            <a href="login.html" class="btn btn-danger btn-sm">
+    Выйти
+</a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<div class="container py-4">
+
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-4">
+
+        <div>
+
+            <h2>
+                Мои заявки
+            </h2>
+
+            <p class="text-secondary mb-0">
+
+                История поданных заявок
+
+            </p>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+            <a href="form.html"
+               class="btn btn-primary">
+                + Новая заявка
+            </a>
+        </div>
+
+    </div>
+
+
+
+    <div
+        id="successAlert"
+        class="alert alert-success d-none">
+
+        Данные обновлены!
+
+    </div>
+
+
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                    <tr>
+
+                        <th>№</th>
+
+                        <th>Пользователь</th>
+
+                        <th>Помещение</th>
+
+                        <th>Дата</th>
+
+                        <th>Оплата</th>
+
+                        <th>Статус</th>
+
+                        <th>Отзыв</th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody id="applications"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="modal fade" id="reviewModal" tabindex="-1"
+     aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="reviewModalLabel">
+                    Оставить отзыв
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Закрыть"></button>
+            </div>
+
+            <form id="reviewForm">
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="reviewRating"
+                               class="form-label fw-semibold">
+                            Оценка
+                        </label>
+
+                        <select id="reviewRating"
+                                class="form-select"
+                                required>
+                            <option value="">Выберите оценку</option>
+                            <option value="1">⭐ 1 из 5</option>
+                            <option value="2">⭐⭐ 2 из 5</option>
+                            <option value="3">⭐⭐⭐ 3 из 5</option>
+                            <option value="4">⭐⭐⭐⭐ 4 из 5</option>
+                            <option value="5">⭐⭐⭐⭐⭐ 5 из 5</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reviewComment"
+                               class="form-label fw-semibold">
+                            Комментарий
+                        </label>
+
+                        <textarea id="reviewComment"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="500"
+                                  placeholder="Напишите ваш отзыв..."
+                                  required></textarea>
+
+                        <div class="form-text">
+                            Максимум 500 символов.
+                        </div>
+                    </div>
+
+                    <div id="reviewSuccess"
+                         class="alert alert-success d-none mb-0">
+                        Отзыв успешно отправлен!
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Отправить отзыв
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+
+
+<script>
+
+function showApplications() {
+
+    const table =
+        document.getElementById("applications");
+
+
+    const applications =
+        getApplications();
+
+
+    table.innerHTML = "";
+
+
+    if (!applications.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="7"
+                    class="text-center text-secondary py-5">
+
+                    У вас пока нет заявок.
+
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+    
+const currentUser = localStorage.getItem("currentUser");
+
+if (currentUser) {
+    document.getElementById("currentUser").textContent = currentUser;
+}
+
+    applications.forEach((item, i) => {
+
+        table.innerHTML += `
+
+            <tr>
+
+                <td>
+                    ${i + 1}
+                </td>
+
+
+                <td>
+                    ${item.user || "Пользователь"}
+                </td>
+
+
+                <td>
+                    ${item.room}
+                </td>
+
+
+                <td>
+                    ${item.date}
+                </td>
+
+
+                <td>
+                    ${item.payment}
+                </td>
+
+
+                <td>
+
+                    <span class="badge
+                        ${getBadge(item.status)}">
+
+                        ${item.status}
+
+                    </span>
+
+                </td>
+
+                <td>
+                    <button
+                        type="button"
+                        class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reviewModal"
+                        onclick="setReviewApplication(${item.id})">
+                        ⭐ Оставить отзыв
+                    </button>
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+let reviewApplicationId = null;
+
+function setReviewApplication(id) {
+    reviewApplicationId = id;
+}
+
+const reviewForm = document.getElementById("reviewForm");
+const reviewSuccess = document.getElementById("reviewSuccess");
+
+if (reviewForm) {
+    reviewForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const rating = Number(
+            document.getElementById("reviewRating").value
+        );
+
+        const comment = document
+            .getElementById("reviewComment")
+            .value
+            .trim();
+
+        const user =
+            localStorage.getItem("currentUser") || "Пользователь";
+
+        if (!rating || rating < 1 || rating > 5 || !comment) {
+            return;
+        }
+
+        const reviews =
+            JSON.parse(localStorage.getItem("reviews") || "[]");
+
+        reviews.push({
+            id: Date.now(),
+            applicationId: reviewApplicationId,
+            user: user,
+            rating: rating,
+            comment: comment,
+            date: new Date().toLocaleString("ru-RU")
+        });
+
+        localStorage.setItem(
+            "reviews",
+            JSON.stringify(reviews)
+        );
+
+        reviewSuccess.classList.remove("d-none");
+        reviewForm.reset();
+
+        setTimeout(() => {
+            const modalElement =
+                document.getElementById("reviewModal");
+
+            const modal =
+                bootstrap.Modal.getInstance(modalElement);
+
+            if (modal) {
+                modal.hide();
+            }
+
+            reviewSuccess.classList.add("d-none");
+        }, 1000);
+    });
+}
+
+showApplications();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Создать заявку</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary shadow">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           href="index.html">
+            Система заявок
+        </a>
+
+        <div>
+
+            <a href="index.html"
+               class="btn btn-light btn-sm">
+                Мои заявки
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<div class="container py-5">
+
+    <div class="card shadow-sm mx-auto"
+         style="max-width:650px">
+
+        <div class="card-body p-4">
+
+            <h2 class="mb-4">
+                Формирование заявки
+            </h2>
+
+            <form id="applicationForm">
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        ФИО
+                    </label>
+
+                    <input
+                        type="text"
+                        id="user"
+                        class="form-control"
+                        placeholder="Иванов Иван Иванович"
+                        required>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Помещение
+                    </label>
+
+                    <input
+                        type="text"
+                        id="room"
+                        class="form-control"
+                        placeholder="Конференц-зал №1"
+                        minlength="3"
+                        required>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Дата конференции
+                    </label>
+
+                    <input
+                        type="date"
+                        id="date"
+                        class="form-control"
+                        required>
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label class="form-label">
+                        Способ оплаты
+                    </label>
+
+                    <select
+                        id="payment"
+                        class="form-select"
+                        required>
+
+                        <option value="">
+                            Выберите способ оплаты
+                        </option>
+
+                        <option>
+                            Банковская карта
+                        </option>
+
+                        <option>
+                            Наличные
+                        </option>
+
+                        <option>
+                            Безналичный расчёт
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    href="index.html"
+                    class="btn btn-primary w-100">
+
+                    Отправить заявку
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="app.js"></script>
+
+<script>
+
+document
+    .getElementById("applicationForm")
+    .addEventListener("submit", function(e) {
+
+        e.preventDefault();
+
+
+        if (!this.checkValidity()) {
+
+            this.classList.add("was-validated");
+
+            return;
+        }
+
+
+        let applications = getApplications();
+
+
+        const date = document
+            .getElementById("date")
+            .value
+            .split("-")
+            .reverse()
+            .join(".");
+
+
+        const newApplication = {
+
+            id: Date.now(),
+
+            user:
+                document.getElementById("user").value,
+
+            room:
+                document.getElementById("room").value,
+
+            date: date,
+
+            payment:
+                document.getElementById("payment").value,
+
+            status: "Новая"
+        };
+
+
+        applications.push(newApplication);
+
+
+        saveApplications(applications);
+
+
+        alert("Заявка успешно отправлена!");
+
+
+        window.location.href = "index.html";
+
+    });
+
+</script>
+
+</body>
+</html>

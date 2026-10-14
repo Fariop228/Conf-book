@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Панель администратора</title>
+
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+
+    <style>
+
+        body {
+            background: #f5f7fb;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 16px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar navbar-dark bg-primary shadow-sm">
+
+    <div class="container">
+
+        <span class="navbar-brand fw-bold">
+
+            Система заявок
+
+        </span>
+
+
+        <div class="d-flex gap-2">
+
+            <a
+                href="index.html"
+                class="btn btn-danger btn-sm">
+
+                Выйти
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<main class="container py-4">
+
+
+    <div class="d-flex
+                justify-content-between
+                align-items-center
+                mb-4">
+
+        <div>
+
+            <h2>
+                Панель администратора
+            </h2>
+
+            <p class="text-secondary mb-0">
+
+                Управление заявками
+
+            </p>
+
+        </div>
+
+
+        <button
+            onclick="resetData()"
+            class="btn btn-outline-danger">
+
+            Сбросить данные
+
+        </button>
+
+    </div>
+
+    <div
+        id="statusAlert"
+        class="alert alert-success d-none">
+
+        Статус заявки изменён!
+
+    </div>
+
+
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                    <tr>
+
+                        <th>№</th>
+
+                        <th>Пользователь</th>
+
+                        <th>Помещение</th>
+
+                        <th>Дата</th>
+
+                        <th>Оплата</th>
+
+                        <th>Статус</th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="applicationsBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Отзывы пользователей -->
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                        align-items-center mb-3">
+
+                <div>
+                    <h4 class="mb-1">Отзывы пользователей</h4>
+                    <p class="text-secondary mb-0">
+                        Оценки и комментарии пользователей
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="clearReviews()"
+                    class="btn btn-outline-danger btn-sm">
+                    Очистить отзывы
+                </button>
+
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                    <tr>
+                        <th>№</th>
+                        <th>Пользователь</th>
+                        <th>Оценка</th>
+                        <th>Комментарий</th>
+                        <th>Дата</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="reviewsBody"></tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+<script src="app.js"></script>
+
+
+<script>
+
+
+checkAdmin();
+
+
+
+function renderApplications() {
+
+    const tbody =
+        document.getElementById(
+            "applicationsBody"
+        );
+
+
+    const applications =
+        getApplications();
+
+
+    tbody.innerHTML = "";
+
+
+    if (!applications.length) {
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="6"
+                    class="text-center text-secondary py-5">
+
+                    Заявок пока нет
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
+
+
+    applications.forEach((app, index) => {
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                ${index + 1}
+            </td>
+
+
+            <td>
+                ${app.user || "Пользователь"}
+            </td>
+
+
+            <td>
+                ${app.room}
+            </td>
+
+
+            <td>
+                ${app.date}
+            </td>
+
+
+            <td>
+                ${app.payment}
+            </td>
+
+
+            <td>
+
+                <span
+                    class="badge ${getBadge(app.status)}">
+
+                    ${app.status}
+
+                </span>
+
+
+                <select
+                    class="form-select
+                           form-select-sm
+                           mt-2"
+                    onchange="
+                        changeStatus(
+                            ${app.id},
+                            this.value
+                        )
+                    ">
+
+                    <option
+                        ${app.status === "Новая"
+                            ? "selected"
+                            : ""}>
+
+                        Новая
+
+                    </option>
+
+
+                    <option
+                        ${app.status === "Мероприятие назначено"
+                            ? "selected"
+                            : ""}>
+
+                        Мероприятие назначено
+
+                    </option>
+
+
+                    <option
+                        ${app.status === "Завершено"
+                            ? "selected"
+                            : ""}>
+
+                        Завершено
+
+                    </option>
+
+                </select>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+
+function changeStatus(id, newStatus) {
+
+
+    const applications =
+        getApplications();
+
+
+    const application =
+        applications.find(
+            app => app.id === id
+        );
+
+
+    if (!application) return;
+
+
+    application.status =
+        newStatus;
+
+
+    saveApplications(
+        applications
+    );
+
+
+    
+function getReviews() {
+    return JSON.parse(
+        localStorage.getItem("reviews") || "[]"
+    );
+}
+
+function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.textContent = value;
+    return div.innerHTML;
+}
+
+function renderReviews() {
+    const tbody =
+        document.getElementById("reviewsBody");
+
+    const reviews = getReviews();
+
+    tbody.innerHTML = "";
+
+    if (!reviews.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5"
+                    class="text-center text-secondary py-4">
+                    Отзывов пока нет
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    reviews.slice().reverse().forEach((review, index) => {
+
+        const row = document.createElement("tr");
+
+        const rating =
+            Number(review.rating) || 0;
+
+        row.innerHTML = `
+            <td>${index + 1}</td>
+
+            <td>
+                ${escapeHtml(
+                    review.user || "Пользователь"
+                )}
+            </td>
+
+            <td>
+                ${"⭐".repeat(rating)}
+                (${rating}/5)
+            </td>
+
+            <td style="white-space: pre-wrap;">
+                ${escapeHtml(review.comment || "")}
+            </td>
+
+            <td>
+                ${escapeHtml(review.date || "")}
+            </td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+function clearReviews() {
+    if (!confirm("Удалить все отзывы?")) {
+        return;
+    }
+
+    localStorage.removeItem("reviews");
+    renderReviews();
+}
+
+
+renderApplications();
+renderReviews();
+
+
+    const alert =
+        document.getElementById(
+            "statusAlert"
+        );
+
+
+    alert.textContent =
+        `Статус заявки №${id}
+         изменён на «${newStatus}»`;
+
+
+    alert.classList.remove(
+        "d-none"
+    );
+
+
+    setTimeout(() => {
+
+        alert.classList.add(
+            "d-none"
+        );
+
+    }, 2500);
+
+}
+
+
+
+function resetData() {
+
+
+    if (!confirm(
+        "Сбросить все заявки?"
+    )) {
+
+        return;
+
+    }
+
+
+    saveApplications(
+        JSON.parse(
+            JSON.stringify(
+                defaultApplications
+            )
+        )
+    );
+
+
+}
+
+
+
+renderApplications();
+
+</script>
+
+
+</body>
+</html>

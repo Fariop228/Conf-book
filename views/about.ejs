@@ -1,0 +1,15 @@
+<h1><%= title %></h1>
+
+<% if (errors.length) { %>
+    <ul>
+        <% errors.forEach(e => { %>
+            <li><%= e %></li>
+        <% }) %>
+    </ul>
+<% } %>
+
+<div class="about-us">
+    <h2>О нас</h2>
+
+    <p><%= description %></p>
+</div>

@@ -1,0 +1,9 @@
+
+node_modules/
+.env
+.env.*
+!.env.example
+conf.db
+conf.db-journal
+conf.db-shm
+conf.db-wal
