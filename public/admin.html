@@ -204,191 +204,85 @@
 <script src="app.js"></script>
 
 
+
 <script>
-
-
 checkAdmin();
 
-
-
 function renderApplications() {
-
-    const tbody =
-        document.getElementById(
-            "applicationsBody"
-        );
-
-
-    const applications =
-        getApplications();
-
+    const tbody = document.getElementById("applicationsBody");
+    const applications = getApplications();
 
     tbody.innerHTML = "";
 
-
     if (!applications.length) {
-
         tbody.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="6"
-                    class="text-center text-secondary py-5">
-
+                <td colspan="6" class="text-center text-secondary py-5">
                     Заявок пока нет
-
                 </td>
-
-            </tr>
-
-        `;
-
+            </tr>`;
         return;
     }
 
-
     applications.forEach((app, index) => {
-
-
-        const row =
-            document.createElement("tr");
-
+        const row = document.createElement("tr");
 
         row.innerHTML = `
-
+            <td>${index + 1}</td>
+            <td>${escapeHtml(app.user || "Пользователь")}</td>
+            <td>${escapeHtml(app.room || "")}</td>
+            <td>${escapeHtml(app.date || "")}</td>
+            <td>${escapeHtml(app.payment || "")}</td>
             <td>
-                ${index + 1}
-            </td>
-
-
-            <td>
-                ${app.user || "Пользователь"}
-            </td>
-
-
-            <td>
-                ${app.room}
-            </td>
-
-
-            <td>
-                ${app.date}
-            </td>
-
-
-            <td>
-                ${app.payment}
-            </td>
-
-
-            <td>
-
-                <span
-                    class="badge ${getBadge(app.status)}">
-
-                    ${app.status}
-
+                <span class="badge ${getBadge(app.status)}">
+                    ${escapeHtml(app.status || "Новая")}
                 </span>
-
-
-                <select
-                    class="form-select
-                           form-select-sm
-                           mt-2"
-                    onchange="
-                        changeStatus(
-                            ${app.id},
-                            this.value
-                        )
-                    ">
-
-                    <option
-                        ${app.status === "Новая"
-                            ? "selected"
-                            : ""}>
-
-                        Новая
-
-                    </option>
-
-
-                    <option
-                        ${app.status === "Мероприятие назначено"
-                            ? "selected"
-                            : ""}>
-
-                        Мероприятие назначено
-
-                    </option>
-
-
-                    <option
-                        ${app.status === "Завершено"
-                            ? "selected"
-                            : ""}>
-
-                        Завершено
-
-                    </option>
-
+                <select class="form-select form-select-sm mt-2">
+                    <option value="Новая">Новая</option>
+                    <option value="Мероприятие назначено">Мероприятие назначено</option>
+                    <option value="Завершено">Завершено</option>
                 </select>
+            </td>`;
 
-            </td>
-
-        `;
-
+        const select = row.querySelector("select");
+        select.value = app.status || "Новая";
+        select.addEventListener("change", () => {
+            changeStatus(app.id, select.value);
+        });
 
         tbody.appendChild(row);
-
     });
-
 }
 
-
-
 function changeStatus(id, newStatus) {
-
-
-    const applications =
-        getApplications();
-
-
-    const application =
-        applications.find(
-            app => app.id === id
-        );
-
+    const applications = getApplications();
+    const application = applications.find(app => app.id === id);
 
     if (!application) return;
 
+    application.status = newStatus;
+    saveApplications(applications);
+    renderApplications();
 
-    application.status =
-        newStatus;
+    const alert = document.getElementById("statusAlert");
+    alert.textContent = `Статус заявки №${id} изменён на «${newStatus}»`;
+    alert.classList.remove("d-none");
 
+    setTimeout(() => alert.classList.add("d-none"), 2500);
+}
 
-    saveApplications(
-        applications
-    );
-
-
-    
 function getReviews() {
-    return JSON.parse(
-        localStorage.getItem("reviews") || "[]"
-    );
+    return JSON.parse(localStorage.getItem("reviews") || "[]");
 }
 
 function escapeHtml(value) {
     const div = document.createElement("div");
-    div.textContent = value;
+    div.textContent = String(value ?? "");
     return div.innerHTML;
 }
 
 function renderReviews() {
-    const tbody =
-        document.getElementById("reviewsBody");
-
+    const tbody = document.getElementById("reviewsBody");
     const reviews = getReviews();
 
     tbody.innerHTML = "";
@@ -396,120 +290,44 @@ function renderReviews() {
     if (!reviews.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5"
-                    class="text-center text-secondary py-4">
+                <td colspan="5" class="text-center text-secondary py-4">
                     Отзывов пока нет
                 </td>
-            </tr>
-        `;
+            </tr>`;
         return;
     }
 
     reviews.slice().reverse().forEach((review, index) => {
-
         const row = document.createElement("tr");
-
-        const rating =
-            Number(review.rating) || 0;
+        const rating = Math.max(0, Math.min(5, Number(review.rating) || 0));
 
         row.innerHTML = `
             <td>${index + 1}</td>
-
-            <td>
-                ${escapeHtml(
-                    review.user || "Пользователь"
-                )}
-            </td>
-
-            <td>
-                ${"⭐".repeat(rating)}
-                (${rating}/5)
-            </td>
-
-            <td style="white-space: pre-wrap;">
-                ${escapeHtml(review.comment || "")}
-            </td>
-
-            <td>
-                ${escapeHtml(review.date || "")}
-            </td>
-        `;
+            <td>${escapeHtml(review.user || "Пользователь")}</td>
+            <td>${"⭐".repeat(rating)} (${rating}/5)</td>
+            <td style="white-space: pre-wrap;">${escapeHtml(review.comment || "")}</td>
+            <td>${escapeHtml(review.date || "")}</td>`;
 
         tbody.appendChild(row);
     });
 }
 
 function clearReviews() {
-    if (!confirm("Удалить все отзывы?")) {
-        return;
-    }
+    if (!confirm("Удалить все отзывы?")) return;
 
     localStorage.removeItem("reviews");
     renderReviews();
 }
 
+function resetData() {
+    if (!confirm("Сбросить все заявки?")) return;
+
+    saveApplications(JSON.parse(JSON.stringify(defaultApplications)));
+    renderApplications();
+}
 
 renderApplications();
 renderReviews();
-
-
-    const alert =
-        document.getElementById(
-            "statusAlert"
-        );
-
-
-    alert.textContent =
-        `Статус заявки №${id}
-         изменён на «${newStatus}»`;
-
-
-    alert.classList.remove(
-        "d-none"
-    );
-
-
-    setTimeout(() => {
-
-        alert.classList.add(
-            "d-none"
-        );
-
-    }, 2500);
-
-}
-
-
-
-function resetData() {
-
-
-    if (!confirm(
-        "Сбросить все заявки?"
-    )) {
-
-        return;
-
-    }
-
-
-    saveApplications(
-        JSON.parse(
-            JSON.stringify(
-                defaultApplications
-            )
-        )
-    );
-
-
-}
-
-
-
-renderApplications();
-
 </script>
-
-
 </body>
 </html>

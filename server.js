@@ -20,6 +20,12 @@ app.use(express.static("public"));
 
 app.use(express.static(join(__dirname, "public")));
 
+
+app.get("/admin", (req, res) => {
+  res.sendFile(join(__dirname, "public", "admin.html"));
+});
+
+
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
